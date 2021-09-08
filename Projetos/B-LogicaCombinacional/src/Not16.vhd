@@ -1,4 +1,4 @@
-library IEEE;
+qlibrary IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity Not16 is
@@ -10,5 +10,6 @@ end entity;
 architecture arch of Not16 is
 begin
 
-
+	q <= not(a);
+	
 end architecture;
