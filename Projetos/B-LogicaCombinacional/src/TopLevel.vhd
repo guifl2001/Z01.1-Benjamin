@@ -48,6 +48,4 @@ begin
 	-- Equaçao: C or D
 	-- Equacao: not((X and Y) or Y) or ((X and Y) nor Z)
 	A <= not((SW(0) and SW(1)) or SW(1)) or ((SW(0) and SW(1)) nor SW(2)); -- Rever dps
-	
-	
 end rtl;
