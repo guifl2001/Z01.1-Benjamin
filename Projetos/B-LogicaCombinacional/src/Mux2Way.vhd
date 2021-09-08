@@ -11,6 +11,9 @@ end entity;
 
 architecture arch of Mux2Way is
 begin
-
+with a select 
+    q <= '0' when '0',
+         '1' when others;
+		
 
 end architecture;
