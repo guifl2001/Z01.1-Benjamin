@@ -21,7 +21,7 @@ entity TopLevel is
 	port(
 		CLOCK_50 : in  std_logic;
 		SW       : in  std_logic_vector(9 downto 0);
-		LEDR     : out std_logic_vector(9 downto 0)
+		A        : out std_logic
 	);
 end entity;
 
@@ -38,5 +38,14 @@ architecture rtl of TopLevel is
 -- implementacao
 ---------------
 begin
-      
+	-- X -> SW(0)
+	-- Y -> SW(1)
+	-- Z -> SW(2)
+	-- node A -> X and Y 
+	-- node B -> A or Y
+	-- node C - > not B
+	-- node D -> A nor Z
+	-- Equaçao: C or D
+	-- Equacao: not((X and Y) or Y) or ((X and Y) nor Z)
+	A <= not((SW(0) and SW(1)) or SW(1)) or ((SW(0) and SW(1)) nor SW(2)); -- Rever dps
 end rtl;
