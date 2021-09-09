@@ -25,6 +25,7 @@ begin
 				d when "011",
 				e when "100",
 				f when "101",
+				g when "110",
 				h when others;
 
 end architecture;
