@@ -54,7 +54,7 @@ begin
 
 d1: sevenSeg port map(
 		bcd => fio0,  
-		leds => HEX2  
+		leds => HEX0  
 	);
 	
 d2: sevenSeg port map(
@@ -64,7 +64,7 @@ d2: sevenSeg port map(
 	
 d3: sevenSeg port map(
 		bcd => fio2,  
-		leds => HEX0 
+		leds => HEX2 
 	);
 
 binbcd: binarioToBcd generic map(N => 10) port map(
