@@ -39,7 +39,7 @@ end component;
 begin
 	l1: sevenSeg port map(
 		bcd =>  SW(3 downto 0),
-		leds => HEX2
+		leds => HEX0
 	);
 	l2: sevenSeg port map(
 		bcd => SW(7 downto 4),
@@ -47,7 +47,7 @@ begin
 	);
 	l3: sevenSeg port map(
 		bcd => "00" & SW(9 downto 8),
-		leds => HEX0
+		leds => HEX2
 		);
 		
 end rtl;
