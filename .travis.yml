@@ -47,8 +47,8 @@ before_script:
 # INSERIR AQUI !!!
 ###############################################
 script:
-   ## Install Z01.1 tools
-   - bash updateZ01tools.sh
+  ## Install Z01.1 tools
+  - bash updateZ01tools.sh
 
   ## run scripts
   - python3 Projetos/A-AmbienteDesenvolvimento/testeAmbienteDesenvolvimento.py
