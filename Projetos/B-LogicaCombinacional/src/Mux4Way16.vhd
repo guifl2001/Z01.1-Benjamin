@@ -16,7 +16,7 @@ begin
 with sel select 
     q <= a when "00",
          b when "01",
-         c when "11",
+         c when "10",
          d when others;
 
 

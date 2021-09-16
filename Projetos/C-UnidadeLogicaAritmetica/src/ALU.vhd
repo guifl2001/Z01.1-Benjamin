@@ -33,10 +33,13 @@ entity ALU is
 			nx:    in STD_LOGIC;                     -- inverte a entrada x
 			zy:    in STD_LOGIC;                     -- zera a entrada y
 			ny:    in STD_LOGIC;                     -- inverte a entrada y
-			f:     in STD_LOGIC;                     -- se 0 calcula x & y, senão x + y
+			selx:  in STD_LOGIC_VECTOR(1 downto 0);  -- Seletor do shift do x ("01" para left shift, "10" para right shift, e o resto nao realiza shift).
+			sely:  in STD_LOGIC_VECTOR(1 downto 0);  -- Seletor do shift do y ("01" para left shift, "10" para right shift, e o resto nao realiza shift).
+			f:     in STD_LOGIC_VECTOR(1 downto 0);  -- Calcula x & y quando f = "00", x + y quando "01" e x xor Y quando "10".
 			no:    in STD_LOGIC;                     -- inverte o valor da saída
 			zr:    out STD_LOGIC;                    -- setado se saída igual a zero
 			ng:    out STD_LOGIC;                    -- setado se saída é negativa
+			cof:   out STD_LOGIC;                    -- Flag de carry overflow, '1' quando há carry overflow, caso contrario '0'.
 			saida: out STD_LOGIC_VECTOR(15 downto 0) -- saída de dados da ALU
 	);
 end entity;
@@ -64,7 +67,8 @@ architecture  rtl OF alu is
 		port(
 			a   :  in STD_LOGIC_VECTOR(15 downto 0);
 			b   :  in STD_LOGIC_VECTOR(15 downto 0);
-			q   : out STD_LOGIC_VECTOR(15 downto 0)
+			q   : out STD_LOGIC_VECTOR(15 downto 0);
+			carry : out STD_LOGIC
 		);
 	end component;
 
@@ -84,16 +88,25 @@ architecture  rtl OF alu is
     );
 	end component;
 
-	component Mux16 is
-		port (
+	component Mux4Way16 is
+		port ( 
 			a:   in  STD_LOGIC_VECTOR(15 downto 0);
 			b:   in  STD_LOGIC_VECTOR(15 downto 0);
-			sel: in  STD_LOGIC;
-			q:   out STD_LOGIC_VECTOR(15 downto 0)
+			c:   in  STD_LOGIC_VECTOR(15 downto 0);
+			d:   in  STD_LOGIC_VECTOR(15 downto 0);
+			sel: in  STD_LOGIC_VECTOR(1 downto 0);
+			q:   out STD_LOGIC_VECTOR(15 downto 0));
+	end component;
+
+	component Shifter16 is
+		port(
+			a:         in STD_LOGIC_VECTOR(15 downto 0);
+			sel:         in STD_LOGIC_VECTOR(1 downto 0);
+			q:           out STD_LOGIC_VECTOR(15 downto 0)
 		);
 	end component;
 
-   SIGNAL zxout,zyout,nxout,nyout,andout,adderout,muxout,precomp: std_logic_vector(15 downto 0);
+   SIGNAL zxout,zyout,nxout,nyout,sxout,syout,andout,adderout,xorout,muxout,precomp: std_logic_vector(15 downto 0);
 
 begin
 
@@ -105,10 +118,27 @@ begin
 	xInverso: inversor16 port map(nx, zxout, nxout);
 	yInverso: inversor16 port map(ny,zyout, nyout);
 
-	XandY: And16 port map(nxout, nyout, andout);
-	XaddY: Add16 port map(nxout, nyout, adderout);
+	-- Implementação do shifter.
+	shifterX: Shifter16 port map(nxout, selx, sxout);
+	shifterY: Shifter16 port map(nyout, sely, syout);
 
-	addAnd: Mux16 port map(andout, adderout, f, muxout);
+	-- Implementação das operações básicas.
+	XandY: And16 port map(sxout, syout, andout);
+	-- Add com o carry overflow implementado
+	XaddY: Add16 port map(sxout, syout, adderout, cof);
+
+	-- Implementa a operação xor entre os dois números
+	xorout <= sxout xor syout;
+
+	-- Adaptando o Mux para a nova operação (X xor Y).
+	Mux4_16: Mux4Way16 port map(
+		a => andout, 
+		b => adderout, 
+		c => xorout,
+		d => "0000000000000000",   -- Apenas 3 operacoes, e 4 entradas no mux
+		sel =>f, 
+		q => muxout
+		);
 
 	muxInverso: inversor16 port map(no, muxout, precomp);
 	comparacao: comparador16 port map(precomp, zr, ng);
