@@ -27,3 +27,33 @@
 ;  RAM[15] = NULL = 0x0000
 
 
+leaw $8, %A 
+movw %A, %D 
+leaw $0, %A 
+movw %D, (%A) 
+
+LOOP:
+    leaw $0, %A 
+    movw (%A), %A
+    movw (%A), %D 
+
+    leaw $END, %A 
+    je %D 
+    nop 
+
+    leaw $0, %A 
+    movw (%A), %D 
+    addw $1, %D, (%A)
+
+    leaw $LOOP, %A 
+    jmp 
+    nop
+
+
+END: 
+    leaw $0, %A 
+    movw (%A), %D 
+    leaw $8, %A 
+    subw %D, %A, %D 
+    leaw $0, %A 
+    movw %D, (%A) 
