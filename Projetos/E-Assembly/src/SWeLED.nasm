@@ -17,7 +17,7 @@ andw %D, %A, %D
 leaw $496, %A
 orw %A, %D, %D
 
-leaw $21184, %A
-movw %D, (%A)
+leaw $21184,%A
+movw %D,(%A)
 
 
