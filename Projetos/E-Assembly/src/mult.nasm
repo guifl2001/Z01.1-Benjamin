@@ -27,6 +27,7 @@ leaw $3, %A         ; carrega a constante 3 no registrador A --> %A = 3
 movw %D, (%A)       ; move/copia o valor da RAM[%A] em %D --> RAM[%A] = %D (soma de todos os RAM[1] e RAM[0])
 
 ; pega o valor de RAM[0] pra continuar diminuindo
+
 leaw $0, %A         ; carrega a constante 0 no registrador A --> %A = 0
 movw (%A), %D       ; move/copia o valor de %D para RAM[%A] -->  %D = RAM[%A] --> %D = RAM[0]
 
