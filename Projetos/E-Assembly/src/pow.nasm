@@ -5,7 +5,6 @@
 
 ; Eleva ao quadrado o valor da RAM[1] e armazena o resultado na RAM[0].
 ; Só funciona com números positivos
-
 leaw $1, %A         ; carrega a constante 0 no registrador A --> %A = 1
 movw (%A), %D       ; move o valor da RAM[%A] para %D --> %D = RAM[%A] --> %D = RAM[1]
 leaw $2, %A         ; carrega a constante 2 no registrador A --> %A = 2 -- aqui poderia ser qualquer número 
