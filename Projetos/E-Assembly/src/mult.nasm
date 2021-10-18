@@ -17,7 +17,7 @@ je %D               ; salta a execução abaixo se %D = 0, ou seja, quando o val
 nop                
 
 leaw $3, %A         ; carrega a constante 3 no registrador A --> %A = 3
-movw (%A), %D       ; move/copia o valor de %D para o RAM[$A] --> %D = RAM[%A] --> RAM[0] = RAM[3]
+movw (%A), %D       ; move/copia o valor da RAM[$A] para %D--> %D = RAM[%A] --> %D = RAM[3]
 
 leaw $1, %A         ; carrega a constante 1 no registrador A --> %A = 1
 addw (%A), %D, %A   ; soma o primeiro valor + o segundo e guarda no terceiro --> %A = RAM[1] + RAM[3]
@@ -31,8 +31,8 @@ movw %D, (%A)       ; move/copia o valor da RAM[%A] em %D --> RAM[%A] = %D (soma
 leaw $0, %A         ; carrega a constante 0 no registrador A --> %A = 0
 movw (%A), %D       ; move/copia o valor de %D para RAM[%A] -->  %D = RAM[%A] --> %D = RAM[0]
 
-decw %D             ; subtrai um (1) da memória
-movw %D, (%A)       ; move/copia o valor de %D para RAM[%A] -->  %D = RAM[0] - 1
+decw %D             ; subtrai um (1) da memória --> %D = RAM[0] - 1
+movw %D, (%A)       ; move/copia o valor de %D para RAM[%A] -->  RAM[0] = %D
 
 leaw $INICIO, %A
 jmp
