@@ -29,7 +29,7 @@ entity MemoryIO is
         -- I/Os
         SW  : in std_logic_vector(9 downto 0);
         LED : OUT std_logic_vector(9 downto 0)
-
+      
 		);
 end entity;
 
@@ -134,10 +134,12 @@ BEGIN
 
     ----------------------------------------
     -- Controla LOAD do display e da ram e LED ! --
+    -- pensar no intervalo que ocorre dentro da ram, ou seja, de 0 a 16383 para a RAM, de 16384
+    -- para 21183, LED em 21184 e SW em 21185.
     ----------------------------------------
-    --LOAD_DISPLAY <= ??????; 
-    --LOAD_RAM     <= ??????; 
-    --LOAD_LED     <= ??????; 
+    LOAD_DISPLAY <= LOAD when ADDRESS <= "101001010111111" and ADDRESS >= "100000000000000"  else '0'; 
+    LOAD_RAM     <= LOAD when ADDRESS <= "011111111111111" and ADDRESS >= "000000000000000" else '0'; 
+    LOAD_LED     <= LOAD when ADDRESS <= "101001011000000" else '0'; 
 
     ----------------------------------------
     -- SW e LED                           --
@@ -152,8 +154,10 @@ BEGIN
     ----------------------------------------
     -- SAIDA do memory I/O                --
     ----------------------------------------
+    -- aasim como o load, depende do endereço que chega e define o que vai sair
     -- precisar ser: RAM ou SW16
-    -- OUTPUT <= ?????? ;
+    OUTPUT <= OUTPUT_RAM when (ADDRESS <= "011111111111111" and ADDRESS >= "000000000000000")
+    else SW16;
 
 
 END logic;
