@@ -23,7 +23,8 @@ architecture tb of tb_ControlUnit is
         muxAM                       : out STD_LOGIC;                     -- mux que seleciona entre reg. A e Mem. RAM para ALU
         zx, nx, zy, ny, f, no       : out STD_LOGIC;                     -- sinais de controle da ALU
         loadA, loadD, loadM, loadPC : out STD_LOGIC;                     -- sinais de load do reg. A, reg. D, Mem. RAM e Program Counter
-        loadS, muxDS                : out STD_LOGIC
+        loadS, muxDS                : out STD_LOGIC;
+        muxALUI_D                   : out STD_LOGIC
         );
   end component;
 
@@ -33,11 +34,11 @@ architecture tb of tb_ControlUnit is
   signal muxAM                   : STD_LOGIC := '0';
   signal muxALUI_A                   : STD_LOGIC := '0';
   signal zx, nx, zy, ny, f, no       : STD_LOGIC := '0';
-  signal loadA, loadD,  loadM, loadPC, loadS, muxDS : STD_LOGIC := '0';
+  signal loadA, loadD,  loadM, loadPC, loadS, muxDS, muxALUI_D : STD_LOGIC := '0';
 
 begin
 
-	uCU: ControlUnit port map(instruction, zr, ng, muxALUI_A, muxAM, zx, nx, zy, ny, f, no, loadA, loadD, loadM, loadPC, loadS, muxDS);
+	uCU: ControlUnit port map(instruction, zr, ng, muxALUI_A, muxAM, zx, nx, zy, ny, f, no, loadA, loadD, loadM, loadPC, loadS, muxDS, muxALUI_D);
 
 	clk <= not clk after 100 ps;
 
@@ -50,7 +51,7 @@ begin
     -----------------------------------------------
 
     -- Teste: loadD
-    instruction <= "00" & "0111111111111111";
+    instruction <= "01" & "0111111111111111";
     wait until clk = '1';
     assert(loadD = '0')
       report "TESTE 1: LOAD D FALSO" severity error;
@@ -79,7 +80,7 @@ begin
 
     instruction <= "00" & "0111111111111111";
     wait until clk = '1';
-    assert(loadA = '1' and loadM = '0' and loadD = '0')
+    assert(loadA = '0' and loadM = '0' and loadD = '1')
       report "TESTE 6: loadA" severity error;
 
     -- Teste: muxALUI_A
@@ -88,7 +89,7 @@ begin
     assert(muxALUI_A = '0')
       report "TESTE 7: muxALUIA" severity error;
 
-    instruction <= "00" & "0111111111111111";
+    instruction <= "01" & "0111111111111111";
     wait until clk = '1';
     assert(muxALUI_A = '1')
       report "TESTE 8: muxALUIA falso" severity error;
@@ -110,13 +111,13 @@ begin
    -----------------------------------------------
 
 		-- Teste: A instruction
-    instruction <= "00" & "0111111111111111";
+    instruction <= "01" & "0111111111111111";
     wait until clk = '1';
 		assert(loadA = '1' and loadD = '0' and loadM = '0' and loadPC = '0' and muxALUI_A = '1')
       report "Falha em leaw 0xFFFF, %A" severity error;
 
 		-- leaw %5, %A
-    instruction <= "00" & "0000000000000101";
+    instruction <= "01" & "0000000000000101";
     wait until clk = '1';
 		assert(loadA = '1' and loadD = '0' and loadM = '0' and loadPC = '0' and muxALUI_A = '1')
       report "Falha em leaw 5, %A" severity error;
@@ -180,7 +181,7 @@ begin
       report " **Falha** em jne %D" severity error;
 
     -- jne %D Falso
-    instruction <= "00" & "000" & "001100" & "0000" & "101";
+    instruction <= "01" & "000" & "001100" & "0000" & "101";
     zr <= '0';  ng <= '0';
     wait until clk = '1';
     assert(loadA  = '1' and loadD  = '0' and  loadM  = '0' and  loadPC = '0')
@@ -230,6 +231,27 @@ begin
     assert(loadA  = '0' and loadD  = '0' and  loadM  = '0' and  loadPC = '0' and
           zx = '1' and nx = '1' and zy = '0' and ny = '0' and f = '0' and no = '0' and loadS = '1')
     report " **Falha** mov (%A), %S " severity error;
+
+    -- Testes de carregamente de constante no registrador D
+    -- leaw $5, %D
+    instruction <= "00" & "0000000000000101";
+    wait until clk = '1';
+    assert(loadD = '1')
+    report "TESTE 1: LOAD D" severity error;
+
+    -- mux alui D
+    -- Teste: muxALUI_D
+    -- Recebe o valor da ula
+    instruction <= "10" & "0000000000100000";
+    wait until clk = '1';
+    assert(muxALUI_D = '0')
+    report "TESTE 2: muxALUIA" severity error;
+    -- Recebe a instrucao do tipo A no registrador D
+    instruction <= "00" & "0111111111111111";
+    wait until clk = '1';
+    assert(muxALUI_D = '1')
+    report "TESTE 3: muxALUIA falso" severity error;
+
 
     test_runner_cleanup(runner); -- Simulation ends here
 

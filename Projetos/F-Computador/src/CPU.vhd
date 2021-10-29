@@ -73,7 +73,8 @@ architecture arch of CPU is
       muxAM                       : out STD_LOGIC;
       zx, nx, zy, ny, f, no       : out STD_LOGIC;
       loadA, loadD, loadM, loadPC : out STD_LOGIC;
-      loadS, muxDS                : out STD_LOGIC
+      loadS, muxDS                : out STD_LOGIC;
+      muxALUI_D                   : out STD_LOGIC
       );
   end component;
 
@@ -108,7 +109,7 @@ architecture arch of CPU is
 begin
 
   -- Unidade de controle
-  Control_Unit: ControlUnit port map(instruction, c_zr, c_ng, c_muxALUI_A, c_muxAM, c_zx, c_nx, c_zy, c_ny, c_f, c_no, c_loadA, c_loadD, writeM, c_loadPC, c_loadS, c_muxDS);
+  Control_Unit: ControlUnit port map(instruction, c_zr, c_ng, c_muxALUI_A, c_muxAM, c_zx, c_nx, c_zy, c_ny, c_f, c_no, c_loadA, c_loadD, writeM, c_loadPC, c_loadS, c_muxDS, c_muxALUI_D);
 
   -- MUXs de controle 
   Mux_ULA : Mux16 port map(s_ALUout, instruction(15 downto 0), c_muxALUI_A, s_muxALUI_Aout);--Port map do 1° Mux

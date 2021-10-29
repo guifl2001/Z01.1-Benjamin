@@ -31,19 +31,20 @@ end entity;
 architecture arch of ControlUnit is
 
 begin
-  loadD <= instruction(17) and instruction(4);
+  loadD <= (instruction(17) and instruction(4)) or (not(instruction(17)) and not(instruction(16)));
   loadM <= instruction(17) and instruction(5);
-  loadA <= (instruction(17) and instruction(3)) or not(instruction(17));
+  loadA <= (instruction(17) and instruction(3)) or (not(instruction(17)) and instruction(16));
   -- Usa o bit 6 da intrucao do tipo C para apontar se um novo valor vai ser carregado no registrador S.
   loadS <= instruction(17) and instruction(6);
   
   -- Usamos a instrucao vazia de endereco 14 para selecionar se o registrador D ou o S...
   -- vai entrar na entrada x do ALU.
   muxDS <= instruction(17) and instruction(14);
-  -- 
-  muxALUI_D <= not(instruction(17)) ;
+  -- Instrucao para carregar uma constante no registrador D, quando a instrucao(16) for 0, a instrucao do tipo A...
+  -- Sera carregada no registrador D, quando for 1, no registrador A.
+  muxALUI_D <= not(instruction(17)) and not(instruction(16));
   -- Sinal do mux que controla se o input de no registrador A vem da instrucao ou da ULA.
-  muxALUI_A <=  not(instruction(17));
+  muxALUI_A <=  not(instruction(17)) and instruction(16);
   zx <= instruction(17) and instruction(12);
   nx <= instruction(17) and instruction(11);
   zy <= instruction(17) and instruction(10);
