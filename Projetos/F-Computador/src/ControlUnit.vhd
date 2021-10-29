@@ -21,8 +21,10 @@ entity ControlUnit is
                                                                      -- reg. A e Mem. RAM para ALU
                                                                      -- A  e Mem. RAM para ALU
 		zx, nx, zy, ny, f, no       : out STD_LOGIC;                     -- sinais de controle da ALU
-		loadA, loadD, loadM, loadPC : out STD_LOGIC               -- sinais de load do reg. A,
+		loadA, loadD, loadM, loadPC : out STD_LOGIC;                     -- sinais de load do reg. A,
                                                                      -- reg. D, Mem. RAM e Program Counter
+    loadS, muxDS                : out STD_LOGIC;                     -- Sinais relacionados ao registrador S
+    muxALUI_D                   : out STD_LOGIC                      -- Mux do carregamento no registrador D
     );
 end entity;
 
@@ -32,8 +34,16 @@ begin
   loadD <= instruction(17) and instruction(4);
   loadM <= instruction(17) and instruction(5);
   loadA <= (instruction(17) and instruction(3)) or not(instruction(17));
+  -- Usa o bit 6 da intrucao do tipo C para apontar se um novo valor vai ser carregado no registrador S.
+  loadS <= instruction(17) and instruction(6);
   
-  muxALUI_A <=  not (instruction(17));
+  -- Usamos a instrucao vazia de endereco 14 para selecionar se o registrador D ou o S...
+  -- vai entrar na entrada x do ALU.
+  muxDS <= instruction(17) and instruction(14);
+  -- 
+  muxALUI_D <= not(instruction(17)) ;
+  -- Sinal do mux que controla se o input de no registrador A vem da instrucao ou da ULA.
+  muxALUI_A <=  not(instruction(17));
   zx <= instruction(17) and instruction(12);
   nx <= instruction(17) and instruction(11);
   zy <= instruction(17) and instruction(10);

@@ -72,12 +72,15 @@ architecture arch of CPU is
       muxALUI_A                   : out STD_LOGIC;
       muxAM                       : out STD_LOGIC;
       zx, nx, zy, ny, f, no       : out STD_LOGIC;
-      loadA, loadD, loadM, loadPC : out STD_LOGIC
+      loadA, loadD, loadM, loadPC : out STD_LOGIC;
+      loadS, muxDS                : out STD_LOGIC
       );
   end component;
 
   signal c_muxALUI_A: STD_LOGIC;
+  signal c_muxALUI_D: STD_LOGIC;
   signal c_muxAM: STD_LOGIC;
+  signal c_muxDS: STD_LOGIC;
   signal c_zx: STD_LOGIC;
   signal c_nx: STD_LOGIC;
   signal c_zy: STD_LOGIC;
@@ -86,18 +89,49 @@ architecture arch of CPU is
   signal c_no: STD_LOGIC;
   signal c_loadA: STD_LOGIC;
   signal c_loadD: STD_LOGIC;
+  signal c_loadS: STD_LOGIC;
   signal c_loadPC: STD_LOGIC;
   signal c_zr: std_logic := '0';
   signal c_ng: std_logic := '0';
 
   signal s_muxALUI_Aout: STD_LOGIC_VECTOR(15 downto 0);
+  signal s_muxALUI_Dout: STD_LOGIC_VECTOR(15 downto 0);
   signal s_muxAM_out: STD_LOGIC_VECTOR(15 downto 0);
+  signal s_muxDS_out: STD_LOGIC_VECTOR(15 downto 0);
   signal s_regAout: STD_LOGIC_VECTOR(15 downto 0);
+  signal s_regSout: STD_LOGIC_VECTOR(15 downto 0);
   signal s_regDout: STD_LOGIC_VECTOR(15 downto 0);
   signal s_ALUout: STD_LOGIC_VECTOR(15 downto 0);
 
   signal s_pcout: STD_LOGIC_VECTOR(15 downto 0);
 
 begin
+
+  -- Unidade de controle
+  Control_Unit: ControlUnit port map(instruction, c_zr, c_ng, c_muxALUI_A, c_muxAM, c_zx, c_nx, c_zy, c_ny, c_f, c_no, c_loadA, c_loadD, writeM, c_loadPC, c_loadS, c_muxDS);
+
+  -- MUXs de controle 
+  Mux_ULA : Mux16 port map(s_ALUout, instruction(15 downto 0), c_muxALUI_A, s_muxALUI_Aout);--Port map do 1° Mux
+  Mux_Am : Mux16 port map(s_regAout, inM, c_muxAM, s_muxAM_out);--Port map do 2° MUX
+  -- Mux que controla qual dos registradores entra na entrada X da ULA
+  Mux_DS : Mux16 port map(s_regDout, s_regSout, c_muxDS, s_muxDS_out);
+  -- Mux para possibilitar o carregamento de constantes em %D (leaw $0, %D)
+  Mux_ULAD : Mux16 port map(s_ALUout, instruction(15 downto 0), c_muxALUI_D, s_muxALUI_Dout);
+
+  -- Registradores
+  Register_A : Register16 port map(clock, s_muxALUI_Aout, c_loadA, s_regAout);--Port map do Registrador A
+  Register_D : Register16 port map(clock, s_muxALUI_Dout, c_loadD, s_regDout);--Port map do Registrador D
+  Register_S : Register16 port map(clock, s_ALUout, c_loadS, s_regSout);
+
+  -- Unidade de logica aritimetica
+  ULA: ALU port map(s_muxDS_out, s_muxAM_out, c_zx, c_nx, c_zy, c_ny, c_f, c_no, c_zr, c_ng, s_ALUout);--Port Map da ULA
+
+  -- Saida para as memorias
+  outM <= s_ALUout;--Saída da ULA corresponde aos dados pra gravar memória na RAM(saída representado esse sinal)
+  pcout <= s_pcout(14 downto 0); --saída do pc representada pelo sinal pelos 14 bits menos significativos de s_pcout
+  addressM <= s_regAout(14 downto 0);--endereço enviado pra memória RAM representada pelo sinal pelos 14 bits menos significativos de s_regAcout
+
+
+  PC_1 : pc port map(clock, '1', c_loadPC, reset, s_regAout, s_pcout); --Port map do PC(program counter)
 
 end architecture;

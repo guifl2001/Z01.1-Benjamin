@@ -22,7 +22,8 @@ architecture tb of tb_ControlUnit is
         muxALUI_A                   : out STD_LOGIC;                     -- mux que seleciona entre instrução e ALU para reg. A
         muxAM                       : out STD_LOGIC;                     -- mux que seleciona entre reg. A e Mem. RAM para ALU
         zx, nx, zy, ny, f, no       : out STD_LOGIC;                     -- sinais de controle da ALU
-        loadA, loadD, loadM, loadPC : out STD_LOGIC                      -- sinais de load do reg. A, reg. D, Mem. RAM e Program Counter
+        loadA, loadD, loadM, loadPC : out STD_LOGIC;                     -- sinais de load do reg. A, reg. D, Mem. RAM e Program Counter
+        loadS, muxDS                : out STD_LOGIC
         );
   end component;
 
@@ -32,11 +33,11 @@ architecture tb of tb_ControlUnit is
   signal muxAM                   : STD_LOGIC := '0';
   signal muxALUI_A                   : STD_LOGIC := '0';
   signal zx, nx, zy, ny, f, no       : STD_LOGIC := '0';
-  signal loadA, loadD,  loadM, loadPC : STD_LOGIC := '0';
+  signal loadA, loadD,  loadM, loadPC, loadS, muxDS : STD_LOGIC := '0';
 
 begin
 
-	uCU: ControlUnit port map(instruction, zr, ng, muxALUI_A, muxAM, zx, nx, zy, ny, f, no, loadA, loadD, loadM, loadPC);
+	uCU: ControlUnit port map(instruction, zr, ng, muxALUI_A, muxAM, zx, nx, zy, ny, f, no, loadA, loadD, loadM, loadPC, loadS, muxDS);
 
 	clk <= not clk after 100 ps;
 
@@ -134,7 +135,7 @@ begin
     instruction <= "10" & "010" & "110000" & "0010" & "000";
     wait until clk = '1';
     assert(loadA  = '0' and loadD  = '1' and  loadM  = '0' and  loadPC = '0' and
-           zx = '1' and nx = '1' and zy = '0' and ny = '0' and f = '0' and no = '0')
+           zx = '1' and nx = '1' and zy = '0' and ny = '0' and f = '0' and no = '0' and loadS = '0')
       report " **Falha** mov (%A), %D " severity error;
 
     -- mov 0 -> (A)
@@ -200,6 +201,35 @@ begin
     assert(loadA  = '0' and loadD  = '0' and  loadM  = '0' and  loadPC = '0' and
            zx = '0' and nx = '0' and zy = '1' and ny = '1' and f = '0' and no = '0')
       report " **Falha** em jge %D falso" severity error;
+    
+    -- Testes registrador S
+    instruction <= "00" & "0111111111111111";
+    wait until clk = '1';
+    assert(loadS = '0')
+    report "TESTE 1: LOAD S FALSO" severity error;
+
+    instruction <= "10" & "0000000001000000";
+    wait until clk = '1';
+    assert(loadS = '1')
+    report "TESTE 2: LOAD D" severity error;
+
+    -- Teste: muxDS
+    instruction <= "10" & "0100000000000000";
+    wait until clk = '1';
+    assert(muxDS = '1')
+    report "TESTE 7: muxDS" severity error;
+
+    instruction <= "00" & "0111111111111111";
+    wait until clk = '1';
+    assert(muxDS = '0')
+    report "TESTE 8: muxDS falso" severity error;
+
+    -- mov (%A) -> S
+    instruction <= "10" & "010" & "110000" & "1000" & "000";
+    wait until clk = '1';
+    assert(loadA  = '0' and loadD  = '0' and  loadM  = '0' and  loadPC = '0' and
+          zx = '1' and nx = '1' and zy = '0' and ny = '0' and f = '0' and no = '0' and loadS = '1')
+    report " **Falha** mov (%A), %S " severity error;
 
     test_runner_cleanup(runner); -- Simulation ends here
 
