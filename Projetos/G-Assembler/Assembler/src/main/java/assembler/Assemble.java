@@ -132,23 +132,24 @@ public class Assemble {
                     instruction = "10" + comp + dest + jmp;
 
                     break;
+
+                    //String em decimal
                 case A_COMMAND:
                     //String em decimal
                     String symbolDecimal = parser.symbol(parser.command());
-
-                    try{
+                    System.out.println(symbolDecimal);
+                    // Checka se e um numero
+                    boolean eNumero = Character.isDigit(symbolDecimal.charAt(0));
+                    if (eNumero){
                         //Conversao para binario
                         String symbolBinary = Code.toBinary(symbolDecimal);
                         //numero da instrucao em binario
                         instruction = "00" + symbolBinary;
-
-                    } catch (Exception e){
-                        //Se o endereco não estiver na tabela de simbolos
+                    } else {
 
                         String TableAddress = table.getAddress(symbolDecimal).toString();
                         //numero da instrucao em binario
                         instruction = "00" + Code.toBinary(TableAddress);
-
                     }
                     break;
                 default:
@@ -159,7 +160,7 @@ public class Assemble {
                 outHACK.println(instruction);
             }
             instruction = null;
-           
+
         }
 
     }
