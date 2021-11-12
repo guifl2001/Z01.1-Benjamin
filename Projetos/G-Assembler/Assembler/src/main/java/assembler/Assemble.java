@@ -137,7 +137,7 @@ public class Assemble {
                 case A_COMMAND:
                     //String em decimal
                     String symbolDecimal = parser.symbol(parser.command());
-                    System.out.println(symbolDecimal);
+                    
                     // Checka se e um numero
                     boolean eNumero = Character.isDigit(symbolDecimal.charAt(0));
                     if (eNumero){
