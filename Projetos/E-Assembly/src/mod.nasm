@@ -41,7 +41,7 @@ jmp
 nop 
 ;saida deste modulo, copia o valor antes do valor RAM[4] para RAM[2]
 SAIDA:
-leaw %4, %A
+leaw $4, %A
 movw (%A), %D
 
 leaw $2, %A
