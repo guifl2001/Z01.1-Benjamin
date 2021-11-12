@@ -1,15 +1,18 @@
 /**
  * Curso: Elementos de Sistemas
- * Arquivo: Assemble.java
- * Created by Luciano <lpsoares@insper.edu.br>
- * Date: 04/02/2017
- *
- * 2018 @ Rafael Corsi
- */
+         * Arquivo: Assemble.java
+         * Created by Luciano <lpsoares@insper.edu.br>
+        * Date: 04/02/2017
+        *
+        * 2018 @ Rafael Corsi
+        */
 
-package assembler;
+        package assembler;
 
-import java.io.*;
+        import java.io.*;
+        import java.util.ArrayList;
+        import java.util.Arrays;
+        import java.util.List;
 
 /**
  * Faz a geração do código gerenciando os demais módulos
@@ -33,7 +36,7 @@ public class Assemble {
         inputFile  = inFile;
         hackFile   = new File(outFileHack);                      // Cria arquivo de saída .hack
         outHACK    = new PrintWriter(new FileWriter(hackFile));  // Cria saída do print para
-                                                                 // o arquivo hackfile
+        // o arquivo hackfile
         table      = new SymbolTable();                          // Cria e inicializa a tabela de simbolos
     }
 
@@ -58,8 +61,14 @@ public class Assemble {
                 /* TODO: implementar */
                 // deve verificar se tal label já existe na tabela,
                 // se não, deve inserir. Caso contrário, ignorar.
+                if (!table.contains(label)){
+                    table.addEntry(label, romAddress);
+
+                }
+            } else {
+
+                romAddress++;
             }
-            romAddress++;
         }
         parser.close();
 
@@ -78,8 +87,12 @@ public class Assemble {
                     // deve verificar se tal símbolo já existe na tabela,
                     // se não, deve inserir associando um endereço de
                     // memória RAM a ele.
+                    if (!table.contains(symbol)){
+                        table.addEntry(symbol,ramAddress);
+                    }
                 }
-            }
+            } ramAddress++;
+
         }
         parser.close();
         return table;
@@ -96,6 +109,7 @@ public class Assemble {
         Parser parser = new Parser(inputFile);  // abre o arquivo e aponta para o começo
         String instruction  = "";
 
+
         /**
          * Aqui devemos varrer o código nasm linha a linha
          * e gerar a string 'instruction' para cada linha
@@ -106,18 +120,48 @@ public class Assemble {
             switch (parser.commandType(parser.command())){
                 /* TODO: implementar */
                 case C_COMMAND:
-                break;
-            case A_COMMAND:
-                break;
-            default:
-                continue;
+                    //String iniciliazado da instrucao
+                    String[] instructionSet = parser.instruction(parser.command());
+                    //String relacionado ao jump
+                    String jmp = Code.jump(instructionSet);
+                    //String relacionado ao destino
+                    String dest=Code.dest(instructionSet);
+                    //String relacionado aos calculos
+                    String comp = Code.comp(instructionSet);
+                    //Instrucao completa de 17 bits
+                    instruction = "10" + comp + dest + jmp;
+
+                    break;
+                case A_COMMAND:
+                    //String em decimal
+                    String symbolDecimal = parser.symbol(parser.command());
+
+                    try{
+                        //Conversao para binario
+                        String symbolBinary = Code.toBinary(symbolDecimal);
+                        //numero da instrucao em binario
+                        instruction = "00" + symbolBinary;
+
+                    } catch (Exception e){
+                        //Se o endereco não estiver na tabela de simbolos
+
+                        String TableAddress = table.getAddress(symbolDecimal).toString();
+                        //numero da instrucao em binario
+                        instruction = "00" + Code.toBinary(TableAddress);
+
+                    }
+                    break;
+                default:
+                    continue;
             }
             // Escreve no arquivo .hack a instrução
             if(outHACK!=null) {
                 outHACK.println(instruction);
             }
             instruction = null;
+           
         }
+
     }
 
     /**
