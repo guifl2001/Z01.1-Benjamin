@@ -3,6 +3,10 @@
  * Arquivo: Code.java
  */
 package assembler;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Traduz mnemônicos da linguagem assembly para códigos binários da arquitetura Z0.
  */
@@ -37,7 +41,7 @@ public class Code {
                             return  "0011";
                         }
                         else {
-                            return "0000";
+                            return "0001";
                         }
                     case "%D":
                         if (mnemnonic[mnemnonic.length -2].equals("(%A)")){
@@ -47,7 +51,7 @@ public class Code {
                             return  "0011";
                         }
                         else {
-                            return "0000";
+                            return "0010";
                         }
                     case "(%A)":
                         if (mnemnonic[mnemnonic.length -2].equals("%A")){
@@ -57,7 +61,7 @@ public class Code {
                             return  "0110";
                         }
                         else {
-                            return "0000";
+                            return "0100";
                         }
                 }
             }
@@ -82,7 +86,6 @@ public class Code {
      * @return Opcode (String de 7 bits) com código em linguagem de máquina para a instrução.
      */
     public static String comp(String[] mnemnonic) {
-        /* TODO: implementar */
         switch (mnemnonic[0]) {
             case "movw":
                 switch (mnemnonic[1]) {
@@ -133,15 +136,50 @@ public class Code {
                         return "000000000";
                 }
             case "addw":
-                switch (mnemnonic[1]) {
-                    case "%A":
-                    case "%D":
-                        return "000000010";
-                    case "(%A)":
-                        return "001000010";
-                    case "$1":
-                        return "001110111";
+                // 0  1  2  3  4  5  6 7
+                // 00 r0 zx nx zy ny f no
+                List<String> resultado = Arrays.asList("00", "0", "0", "0", "0", "0", "1", "0");
+                if (mnemnonic[1].equals("$1")){
+                        if (mnemnonic[2].equals("%D")){
+                            resultado.set(2, "0");
+                            resultado.set(3, "1");
+                            resultado.set(4, "1");
+                            resultado.set(5, "1");
+                            resultado.set(7, "1");
+                        }
+                        else if (mnemnonic[2].equals("%A")) {
+                            resultado.set(2, "1");
+                            resultado.set(3, "1");
+                            resultado.set(5, "1");
+                            resultado.set(7, "1");
+                        }
+                        else if (mnemnonic[2].equals("(%A)")) {
+                            resultado.set(1, "1");
+                            resultado.set(2, "1");
+                            resultado.set(3, "1");
+                            resultado.set(5, "1");
+                            resultado.set(7, "1");
+                        }
+                } else if (mnemnonic[1].equals("$-1")){
+                    if (mnemnonic[2].equals("%D")){
+                            resultado.set(4, "1");
+                            resultado.set(5, "1");
+                    } else if (mnemnonic[2].equals("%A")) {
+                        resultado.set(2, "1");
+                        resultado.set(3, "1");
+                    } else if (mnemnonic[2].equals("(%A)")){
+                            resultado.set(1, "1");
+                            resultado.set(2, "1");
+                            resultado.set(3, "1");
+                    }
                 }
+                for (int i = 1; i <= 2; i++){
+                    if (mnemnonic[i].equals("(%A)")) {
+                        resultado.set(1, "1");
+                    }
+                }
+
+                return  String.join("", resultado);
             case "decw":
                 switch (mnemnonic[1]) {
                     case "%D":
@@ -160,12 +198,32 @@ public class Code {
                         return "001010101";
                 }
             case "subw":
-                switch (mnemnonic[1]) {
-                    case "%D":
-                        return "001010011";
-                    case "(%A)":
+
+                String result = "";
+                if (mnemnonic[1].equals("%A")){
+                    if (mnemnonic[2].equals("$1")){
+                        return "000110010";
+                    }
+                    result = "00a000111";
+
+                } else if (mnemnonic[1].equals("%D")){
+                    if (mnemnonic[2].equals("$1")){
+                        return "000001110";
+                    }
+                    result = "00a010011";
+                } else if (mnemnonic[1].equals("(%A)")) {
+                    if (mnemnonic[2].equals("$1")){
                         return "001110010";
+                    }
+                    result = "001000111";
                 }
+                if (mnemnonic[2].equals("(%A)")){
+                    result = result.replace("a", "1");
+                } else {
+                    result = result.replace("a", "0");
+                }
+                return result;
+
             case "rsubw":
                 if ("%D".equals(mnemnonic[1])) {
                     return "001000111";
