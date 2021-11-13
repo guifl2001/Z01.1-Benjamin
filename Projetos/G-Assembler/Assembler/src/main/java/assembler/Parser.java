@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Encapsula o código de leitura. Carrega as instruções na linguagem assembly,
@@ -97,7 +98,7 @@ public class Parser {
                 || commands[0].equals("incw") || commands[0].equals("decw")  || commands[0].equals("notw") || commands[0].equals("negw")
                 || commands[0].equals("andw") || commands[0].equals("orw")   || commands[0].equals("jmp")  || commands[0].equals("je")
                 || commands[0].equals("jne")  || commands[0].equals("jg")    || commands[0].equals("jge")  || commands[0].equals("jle")
-                || commands[0].equals("nop")) {
+                || commands[0].equals("nop") || commands[0].equals("jl")) {
             return CommandType.C_COMMAND;
         }
         else {
@@ -113,7 +114,6 @@ public class Parser {
      */
     public String symbol(String command) {
         String[] commands = command.replaceAll(",+", " ").replaceAll("\\$+", "").split("\\s");
-
         if (commandType(command) == CommandType.A_COMMAND) {
             return commands[1];
         }
@@ -144,7 +144,8 @@ public class Parser {
      * @return um vetor de string contento os tokens da instrução (as partes do comando).
      */
     public String[] instruction(String command) {
-        String[] commands = command.replaceAll(",", " ").split("\\s");
+//        String[] commands = command.replaceAll(",", " ").split("\\s");
+        String[] commands = command.split(" |, |,");
         return commands;
     }
 }
