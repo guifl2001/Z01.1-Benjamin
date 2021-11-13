@@ -144,7 +144,6 @@ public class Parser {
      * @return um vetor de string contento os tokens da instrução (as partes do comando).
      */
     public String[] instruction(String command) {
-//        String[] commands = command.replaceAll(",", " ").split("\\s");
         String[] commands = command.split(" |, |,");
         return commands;
     }
