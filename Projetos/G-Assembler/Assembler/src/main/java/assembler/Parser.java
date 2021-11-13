@@ -2,51 +2,64 @@
  * Curso: Elementos de Sistemas
  * Arquivo: Parser.java
  */
-
 package assembler;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-
+import java.util.Objects;
 /**
  * Encapsula o código de leitura. Carrega as instruções na linguagem assembly,
  * analisa, e oferece acesso as partes da instrução  (campos e símbolos).
  * Além disso, remove todos os espaços em branco e comentários.
  */
 public class Parser {
-
     private final BufferedReader fileReader;
-    public String inputFile;		        // arquivo de leitura
-    public int lineNumber = 0;		     	// linha atual do arquivo (nao do codigo gerado)
+    private final BufferedReader fileNop;
+    public String inputFile;                // arquivo de leitura
+    public int lineNumber = 0;              // linha atual do arquivo (nao do codigo gerado)
     public String currentCommand = "";      // comando atual
-    public String currentLine;			    // linha de codigo atual
-
-
+    public String currentLine;              // linha de codigo atual
     /** Enumerator para os tipos de comandos do Assembler. */
     public enum CommandType {
         A_COMMAND,      // comandos LEA, que armazenam no registrador A
         C_COMMAND,      // comandos de calculos
         L_COMMAND       // comandos de Label (símbolos)
     }
-
     /**
      * Abre o arquivo de entrada NASM e se prepara para analisá-lo.
      * @param file arquivo NASM que será feito o parser.
      */
-    public Parser(String file) throws FileNotFoundException {
+    public Parser(String file) throws IOException {
         this.inputFile = file;
         this.fileReader = new BufferedReader(new FileReader(file));
+        this.fileNop = new BufferedReader(new FileReader(file));
         this.lineNumber = 0;
+        handleNop();
     }
-
+    public void handleNop() throws IOException {
+        String commandLine;
+        boolean nopEsperado = false;
+        int linha = 0;
+        while ((commandLine = fileNop.readLine()) != null) {
+            linha++;
+            commandLine = commandLine.replaceAll("\\s+", "");
+            if (nopEsperado){
+                if(!commandLine.contains("nop")){
+                    System.out.printf("Esperado nop na linha %d%n", linha);
+                    throw new IOException("Nop esperado apos todas as operacoes de jump");
+                }
+            }
+            if (commandLine.length() > 0){
+                nopEsperado = Objects.equals(commandLine.charAt(0), 'j');
+            }
+        }
+    }
     // fecha o arquivo de leitura
     public void close() throws IOException {
         fileReader.close();
     }
-
     /**
      * Carrega uma instrução e avança seu apontador interno para o próxima
      * linha do arquivo de entrada. Caso não haja mais linhas no arquivo de
@@ -70,7 +83,6 @@ public class Parser {
             return true;   // caso um comando seja encontrado
         }
     }
-
     /**
      * Retorna o comando "intrução" atual (sem o avanço)
      * @return a instrução atual para ser analilisada
@@ -79,7 +91,6 @@ public class Parser {
         /* ja esta pronto */
         return currentCommand;
     }
-
     /**
      * Retorna o tipo da instrução passada no argumento:
      *  A_COMMAND para leaw, por exemplo leaw $1,%A
@@ -105,7 +116,6 @@ public class Parser {
             return CommandType.L_COMMAND;
         }
     }
-
     /**
      * Retorna o símbolo ou valor numérico da instrução passada no argumento.
      * Deve ser chamado somente quando commandType() é A_COMMAND.
@@ -121,7 +131,6 @@ public class Parser {
             return null;
         }
     }
-
     /**
      * Retorna o símbolo da instrução passada no argumento.
      * Deve ser chamado somente quando commandType() é L_COMMAND.
@@ -136,7 +145,6 @@ public class Parser {
             return null;
         }
     }
-
     /**
      * Separa os mnemônicos da instrução fornecida em tokens em um vetor de Strings.
      * Deve ser chamado somente quando CommandType () é C_COMMAND.
