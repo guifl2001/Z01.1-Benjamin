@@ -1,1 +1,36 @@
-function pow 3
+function pow 2
+    // Realiza a ^ b
+    // Guarda a em local 0
+    push argument 0
+    pop local 0
+    // contador em local 2
+    push argument 1
+    push constant 1
+    sub
+    pop local 1
+    // Loop da potencia
+    label loop
+        push local 0
+        push argument 0
+        call mult 2
+        pop local 0
+        // if local_2 <= 1 -> END
+        push local 1
+        push constant 1
+        gt
+        not
+        if-goto end
+        // Decrementa
+        // local_2 -= 1
+        push local 1
+        push constant 1
+        sub 
+        pop local 1
+        goto loop
+
+    label end
+        push local 0
+        return
+
+
+

@@ -24,7 +24,7 @@
 // ---------------------------------
 
 function Main.main 0
-                    // x^y
+    // x^y
     push constant 3 // x
     push constant 3 // y
     call pow 2
