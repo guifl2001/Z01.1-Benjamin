@@ -87,8 +87,8 @@ public class Code {
             commands.add("decw %A"); // decresci outra linha
             commands.add("movw (%A), %A"); // move o que está no SP-2 para A
             commands.add("subw %A, %D, %D"); //subtrai para ver se dá 0
-
-            commands.add("leaw $TRUE, %A"); // entra no LOOP se os valores abaixo do stack pointer sejam iguais
+            String label = String.format("TRUE%d", lineCode);
+            commands.add("leaw " + "$" + label + ", %A"); // entra no LOOP se os valores abaixo do stack pointer sejam iguais
             commands.add("je %D");
             commands.add("nop");
             commands.add("leaw $SP, %A");
@@ -100,11 +100,12 @@ public class Code {
             commands.add("movw %A, %D");
             commands.add("leaw $SP, %A");
             commands.add("movw %D, (%A)"); // mover o valor do noso SP para ele
-            commands.add("leaw $END, %A");
+            String labelEnd = String.format("END%d", lineCode);
+            commands.add("leaw " + "$" + labelEnd + ", %A");
             commands.add("jmp");
             commands.add("nop");
 
-            commands.add("TRUE:");
+            commands.add(label + ":");
             commands.add("leaw $SP, %A");
             commands.add("movw (%A), %A");
             commands.add("decw %A");
@@ -114,11 +115,11 @@ public class Code {
             commands.add("movw %A, %D");
             commands.add("leaw $SP, %A");
             commands.add("movw %D, (%A)"); // mover o valor do noso SP para ele
-            commands.add("leaw $END, %A");
+            commands.add("leaw " + "$" + labelEnd + ", %A");
             commands.add("jmp");
             commands.add("nop");
 
-            commands.add("END:");
+            commands.add(labelEnd + ":");
 
 
         } else if (command.equals("gt")) {
@@ -568,6 +569,11 @@ public class Code {
 
         List<String> commands = new ArrayList<String>();
         commands.add( "; Label (marcador)" );
+        commands.add(label + ":");
+        String[] stringArray = new String[commands.size()];
+        commands.toArray(stringArray);
+        write(stringArray);
+
 
     }
 
@@ -595,22 +601,30 @@ public class Code {
         List<String> commands = new ArrayList<String>();
         commands.add(String.format("; %d - Goto Condicional", lineCode++));
 
-        commands.add("leaw $0, %A");
-        commands.add("movw (%A), %D");
-        commands.add("decw %D");
-
+        // Ultimo valor da pilha.
+        commands.add("leaw $SP, %A");
+        commands.add("movw (%A), %A");
+        commands.add("decw %A");
+        // Decrementa o SP
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
         commands.add("movw %D, (%A)");
-        commands.add("movw (%A), %S");
-        commands.add("movw %S, %A");
-        commands.add("movw (%A), %D)");
-        
+        commands.add("movw %D, %A");
+        // Coloca o valor a ser comparado no %D
+        commands.add("movw (%A), %D");
+
+        // Coloca esse valor do ultimo valor da pilha em %D
         commands.add("notw %D");
         commands.add("leaw $" + label + ", %A");
-
         commands.add("je %D");
         commands.add("nop");
 
-     }
+        // Escreve no arquivo de saida
+        String[] stringArray = new String[commands.size()];
+        commands.toArray(stringArray);
+        write(stringArray);
+
+    }
 
     /**
      * Grava no arquivo de saida as instruções em Assembly para uma chamada de função (Call).
@@ -621,7 +635,66 @@ public class Code {
 
         List<String> commands = new ArrayList<String>();
         commands.add(String.format("; %d - chamada de funcao %s", lineCode++, functionName));
+        // DESTINO/LCL/ARG/THIS/THAT
+        // salva o destino
+        commands.add("Destino: ");
+        // Salva o LCL atual
+        commands.add("leaw $" + "LCL" + " ,%A");
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw (%A), %A");
+        commands.add("movw %D, (%A)");
+        commands.add("incw %A"); // +1 no valor do SP
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw %D, (%A)");
+        // salva o ARG atual
+        commands.add("leaw $"+ "ARG" +" ,%A");
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw (%A), %A");
+        commands.add("movw %D, (%A)");
+        commands.add("incw %A"); // +1 no valor do SP
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw %D, (%A)");
+        // Salva o this atual
+        commands.add("leaw $" + "THIS" + " ,%A");
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw (%A), %A");
+        commands.add("movw %D, (%A)");
+        commands.add("incw %A"); // Incrementa o SP
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw %D, (%A)");
+        // Salva o THAT atual
+        commands.add("leaw $" + "THAT" + " ,%A");
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw (%A), %A");
+        commands.add("movw %D, (%A)");
+        commands.add("incw %A"); // +1 no valor do SP
+        commands.add("movw %A, %D");
+        commands.add("leaw $SP, %A");
+        commands.add("movw %D, (%A)");
+        // Altera o lcl para that + 1
+        // LCL aponta para a posicao seguinte o THAT
+        commands.add("leaw $SP, %A");
+        commands.add("movw (%A), %D");
+        commands.add("leaw $LCL, %A");
+        commands.add("movw %D, (%A)");
 
+
+
+        // altera o args para o primeiro argumento passado para a funcao.
+        commands.add("leaw $" + functionName + ", %A");
+
+
+        // Salva no arquivo nasm as instrucoes.
+        String[] stringArray = new String[commands.size()];
+        commands.toArray(stringArray);
+        write(stringArray);
     }
 
     /**
@@ -643,7 +716,7 @@ public class Code {
 
         List<String> commands = new ArrayList<String>();
         commands.add(String.format("; %d - Declarando função %s", lineCode++, functionName));
-
+        commands.add(functionName + ":");
     }
 
     /**
