@@ -592,6 +592,21 @@ public class Code {
         List<String> commands = new ArrayList<String>();
         commands.add(String.format("; %d - Goto Condicional", lineCode++));
 
+        commands.add("leaw $0, %A");
+        commands.add("movw (%A), %D");
+        commands.add("decw %D");
+
+        commands.add("movw %D, (%A)");
+        commands.add("movw (%A), %S");
+        commands.add("movw %S, %A");
+        commands.add("movw (%A), %D)");
+        
+        commands.add("notw %D");
+        commands.add("leaw $" + label + ", %A");
+
+        commands.add("je %D");
+        commands.add("nop");
+
      }
 
     /**
