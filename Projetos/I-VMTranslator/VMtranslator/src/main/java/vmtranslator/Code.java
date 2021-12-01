@@ -13,6 +13,7 @@ import java.util.*;
 import java.io.*;
 import java.nio.file.*;
 
+
 /**
  * Traduz da linguagem vm para códigos assembly.
  */
@@ -208,8 +209,10 @@ public class Code {
      */
     public void writeGoto(String label) {
 
-        List<String> commands = new ArrayList<String>();
-        commands.add(String.format("; %d - Goto Incondicional", lineCode++));
+        List<String> comandos = Arrays.asList(String.format("; %d - Goto Incondicional", new Object[] { Integer.valueOf(this.lineCode++) }),"leaw $"+ label + ",%A","jmp","nop");
+        String[] stringArray = new String[comandos.size()];
+        comandos.toArray(stringArray);
+        write(stringArray);
 
     }
 
